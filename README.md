@@ -10,7 +10,7 @@ assuming `pip` is in the PATH variable. On Windows, I use `py -3 -m pip install 
 
 You will also need a webdriver for Selenium. This program is set up to use the Chrome webdriver. This can be downloaded from [Selenium's Developer Website](https://www.selenium.dev/documentation/en/webdriver/driver_requirements/#quick-reference). Your PATH variable will need to be updated with wherever you saved the executable.
 
-#### Southwest Nonstop
+### Southwest Nonstop
 Loads daily flight schedules, checks if a nonstop flight(s) exist, and prints it out. Accepts an origin and destination in the form of IATA airport code.
 
 Example output:
@@ -46,7 +46,7 @@ The program expects that the IATA codes entered are valid Southwest destinations
 
 **Future Work:** Instead of using the daily pages, check by week. Would require checking where the plane icon is in the weekday columns.
 
-#### Southwest Prices
+### Southwest Prices
 Check Southwest ticket prices as Google Flights does not support it. The code here is all functional, to the best of my knowledge, but Southwest detects that we are using a webscraper so it redirects us to the homepage.
 
 Right now, the program was configured to take an origin airport, travel dates, and check the lowest price to every destination on Southwest's network. If you didn't know where to go but wanted to spend the least, this would be for you.
