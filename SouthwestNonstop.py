@@ -4,6 +4,7 @@ import logging
 import calendar
 import time
 import signal
+import requests
 
 from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
 seleniumLogger.setLevel(logging.WARNING)
@@ -27,8 +28,13 @@ def main():
   IATA_origin = input("Origin: ").upper()
   IATA_destination = input("Destination: ").upper()
   search_date = date.today()
-  end_date = date(2021,11,5) # Southwest far booking date. To be pulled from site in future
+  data = requests.get("https://www.southwest.com/swa-ui/bootstrap/air-flight-schedules/1/data.js").text.strip().split("\n")
+  data = [i for i in data if "currentLastBookableDate" in i]
+  last_bookable_date = data[0].replace(" ","").replace('"currentLastBookableDate":"',"").replace('",',"").split("-")
+  end_date = date(int(last_bookable_date[0]), int(last_bookable_date[1]), int(last_bookable_date[2]))
   one_day_delta = timedelta(days=1)
+
+  print(f"Flight schedules can be seen up to {end_date}.\n")
 
   while search_date < end_date:
     URL = f"https://www.southwest.com/air/flight-schedules/results.html?departureDate={search_date}&destinationAirportCode={IATA_destination}&originationAirportCode={IATA_origin}&scheduleViewType=daily&timeOfDay=ALL_DAY"
