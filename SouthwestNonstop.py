@@ -33,6 +33,7 @@ driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
 # I hate global variables
 search_date = date.today()
 return_date = date.today()
+direct_enabled = False
 
 def main():
   global search_date, return_date
@@ -68,6 +69,7 @@ def main():
   # Checks for nonstop flights from origin to destination
   def roundtrip(orig, dest):
     URL = f"https://www.southwest.com/air/flight-schedules/results.html?departureDate={search_date}&destinationAirportCode={dest}&originationAirportCode={orig}&scheduleViewType=daily&timeOfDay=ALL_DAY"
+    global direct_enabled
 
     try:
       driver.get(URL)
@@ -81,14 +83,37 @@ def main():
         flights = driver.find_element_by_xpath("//div[@class='accordion']")
         flight_list = flights.find_elements_by_css_selector("div.accordion-panel")
 
+        #def gatherInfo(flight_num, flight_time):
+        #  flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
+        #  flight_num = flight_num.replace(" ", "")
+        #  flight_time = flight.find_elements_by_xpath(".//span[@class='time--value']")
+
         # For each flight, check if it is nonstop (it will cause exception otherwise), gather flight info
         for flight in flight_list:
+          flight_num = ""
+          flight_time= []
           try:
-            search = flight.find_element_by_xpath(".//span[@class='flight-stops--item-description_nonstop']").text
-            flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
-            flight_num = flight_num.replace(" ", "")
-            flight_time = flight.find_elements_by_xpath(".//span[@class='time--value']")
-            print(f"{calendar.day_abbr[search_date.weekday()]}\t{search_date}\t{orig}-{dest}\t{flight_num}\t{flight_time[0].text}\t{flight_time[1].text}")
+            if direct_enabled:
+              try:
+                if "no plane change" == flight.find_element_by_xpath(".//span[@class='flight-stops--item-description flight-stops--item-description_one-stop']").text.lower():
+                  search = "Direct"
+                  flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
+                  flight_num = flight_num.replace(" ", "")
+                  flight_time = flight.find_elements_by_xpath(".//span[@class='time--value']")
+              except:
+                search = flight.find_element_by_xpath(".//span[@class='flight-stops--item-description_nonstop']").text
+                flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
+                flight_num = flight_num.replace(" ", "")
+                flight_time = flight.find_elements_by_xpath(".//span[@class='time--value']")
+            else:
+              search = flight.find_element_by_xpath(".//span[@class='flight-stops--item-description_nonstop']").text
+              flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
+              flight_num = flight_num.replace(" ", "")
+              flight_time = flight.find_elements_by_xpath(".//span[@class='time--value']")
+            response = f"{calendar.day_abbr[search_date.weekday()]}\t{search_date}\t{orig}-{dest}\t{flight_num}\t{flight_time[0].text}\t{flight_time[1].text}"
+            if direct_enabled:
+              response += f"\t{search}"
+            print(response)
           except:
             pass
       except:
@@ -116,6 +141,14 @@ def main():
   
   # Checking for command line arguments
   try:
+    global direct_enabled
+    try:
+      for arg in sys.argv:
+        if 'direct' == arg:
+          direct_enabled = True
+        continue
+    except IndexError:
+      pass
     mode = sys.argv[1]
     if mode == 'all':
       while search_date < end_date: # Up to last booking day
@@ -124,6 +157,10 @@ def main():
       datesInput()
       while search_date <= return_date: # Up to return day
         searchAndPrint()
+    elif mode == 'direct':
+      datesInput()
+      for d in range(0,2): # Only two days
+        searchAndPrint(d)
   except IndexError:
     datesInput()
     for d in range(0,2): # Only two days
