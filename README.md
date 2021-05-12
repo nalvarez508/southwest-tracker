@@ -2,7 +2,7 @@
 
 This project was originally designed to determine if there were nonstop flights between a location - specifically, Sacramento to Orlando. It's listed on the airport sites as having nonstop (seasonal) service, but I did not know when that season was.
 
-##### Dependencies
+#### Dependencies
 
 Selenium is required to use this application. You can get it with
 `pip install selenium`
