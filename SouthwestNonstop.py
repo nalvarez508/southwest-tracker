@@ -1,3 +1,6 @@
+# SWA Flight Schedule Scraper // Nick Alvarez c 2021
+# Functional. They don't care about scraping flight schedules.
+
 from datetime import date, timedelta
 import subprocess
 import logging
@@ -15,9 +18,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 
+# Keyboard interrupts
 def exitHandler(signum, frame):
   exit(0)
 
+# Chrome options to disable logging in terminal
 signal.signal(signal.SIGINT, exitHandler)
 chrome_options = Options()
 chrome_options.add_argument("--headless")
@@ -25,9 +30,12 @@ chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
 
 def main():
+  # User input for origin/destination
   IATA_origin = input("Origin: ").upper()
   IATA_destination = input("Destination: ").upper()
   search_date = date.today()
+
+  # Find last bookable date from 'data.js'
   data = requests.get("https://www.southwest.com/swa-ui/bootstrap/air-flight-schedules/1/data.js").text.strip().split("\n")
   data = [i for i in data if "currentLastBookableDate" in i]
   last_bookable_date = data[0].replace(" ","").replace('"currentLastBookableDate":"',"").replace('",',"").split("-")
@@ -36,22 +44,24 @@ def main():
 
   print(f"Flight schedules can be seen up to {end_date}.\n")
 
+  # Checks every day until it reaches end of booking results
   while search_date < end_date:
     URL = f"https://www.southwest.com/air/flight-schedules/results.html?departureDate={search_date}&destinationAirportCode={IATA_destination}&originationAirportCode={IATA_origin}&scheduleViewType=daily&timeOfDay=ALL_DAY"
 
     try:
       driver.get(URL)
       try:
-        try:
+        try: # Makes sure page is loaded, else times out
           WebDriverWait(driver,5).until(EC.presence_of_element_located((By.XPATH, "//div[@class='accordion']")))
         except TimeoutException:
           pass
         
+        # Gather list of flights
         flights = driver.find_element_by_xpath("//div[@class='accordion']")
         flight_list = flights.find_elements_by_css_selector("div.accordion-panel")
 
+        # For each flight, check if it is nonstop (it will cause exception otherwise), gather flight info
         for flight in flight_list:
-          #duration = flight.find_element_by_xpath(".//span[@class='flight-stops--duration-time']").text
           try:
             search = flight.find_element_by_xpath(".//span[@class='flight-stops--item-description_nonstop']").text
             flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
@@ -63,6 +73,7 @@ def main():
       except:
         pass
     
+    # Ctrl-C
     except IOError:
       pass
     
