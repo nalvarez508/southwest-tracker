@@ -13,7 +13,7 @@ You will also need a webdriver for Selenium. This program is set up to use the C
 ### Southwest Nonstop
 There are three operational modes to this but the goal is to find nonstop flights.
 
-##### Search All
+#### Search All
 Searches for nonstop flights, both to and from, between the current date and last available booking date.
 
 Example output:
@@ -37,7 +37,7 @@ Thu     2021-05-13      PHX-RNO #1546   12:10PM 1:55PM
 Thu     2021-05-13      PHX-RNO #2054   9:00PM  10:45PM
 ```
 
-##### Search Interval
+#### Search Interval
 Searches for nonstop flights, both to and from, between the specified departure and return dates.
 
 Example output:
@@ -62,7 +62,7 @@ Sat     2021-06-05      DEN-CHS #5547   3:45PM  9:05PM
 Sat     2021-06-05      CHS-DEN #4321   5:40PM  7:25PM
 ```
 
-##### Search Trip
+#### Search Trip
 Searches for nonstop flights, to and then from, on the specified departure and return dates.
 
 Example output:
@@ -89,7 +89,7 @@ Mon     2021-08-09      OAK-SEA #319    4:45PM  6:45PM
 Mon     2021-08-09      OAK-SEA #1665   7:05PM  9:10PM
 ```
 
-##### Generalities
+#### Generalities
 If flights are not found, there will be no output other than a reassurance indicator that the program is still searching:
 ```
 Origin: SMF
