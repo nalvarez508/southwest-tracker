@@ -10,6 +10,7 @@ import re
 from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
 seleniumLogger.setLevel(logging.WARNING)
 from selenium import webdriver
+#import undetected_chromedriver as webdriver
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support.ui import WebDriverWait
@@ -22,8 +23,16 @@ def exitHandler(signum, frame):
 signal.signal(signal.SIGINT, exitHandler)
 chrome_options = Options()
 #chrome_options.add_argument("--headless")
+chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+chrome_options.add_argument("window-size=1280,800")
+chrome_options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36")
+#chrome_options.add_argument("user-data-dir=selenium")
+#chrome_options.add_argument('proxy-server=192.53.122.229:3128')
+
 chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
+
+driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
 
 airports = []
 weAreDone = False
@@ -63,7 +72,9 @@ def main():
   print(f"Searching for roundtrip flights from {IATA_origin} from {to_date} to {rtn_date}...")
 
   for airport in airports:
-    URL = f"https://www.southwest.com/air/low-fare-calendar/select-dates.html?adultPassengersCount=1&currencyCode=USD&departureDate={to_date}&destinationAirportCode={airport}&originationAirportCode={IATA_origin}&passengerType=ADULT&returnAirportCode=&returnDate={rtn_date}&tripType=roundtrip"
+    time.sleep(5)
+    #URL = f"https://www.southwest.com/air/low-fare-calendar/select-dates.html?adultPassengersCount=1&currencyCode=USD&departureDate={to_date}&destinationAirportCode={airport}&originationAirportCode={IATA_origin}&passengerType=ADULT&returnAirportCode=&returnDate={rtn_date}&tripType=roundtrip"
+    URL = "https://www.southwest.com/air/booking/select.html?int=HOMEQBOMAIR&adultPassengersCount=1&departureDate=2021-06-01&destinationAirportCode=ALB&fareType=USD&originationAirportCode=RNO&passengerType=ADULT&returnDate=2021-06-09&tripType=roundtrip&departureTimeOfDay=ALL_DAY&reset=true&returnTimeOfDay=ALL_DAY"
 
     try:
       print(URL)
@@ -83,6 +94,8 @@ def main():
         #to_flights = to_flights.find_elements_by_css_selector("div.air-low-fare-calendar-matrix-secondary")
 
         print(f"Found flights for {airport}")
+        trip = driver.find_element_by_xpath("//span[@class='air-stations-heading--origin-destination']").text
+        print(f"---------{trip}---------------------")
 
         #while weAreDone == False:
         for flight in to_flights:
@@ -110,7 +123,7 @@ def main():
             pass
 
 
-          print(f'{IATA_origin} > {airport}\t${to_price}\n{airport} > {IATA_origin}\t${rtn_price}\nTotal Price: ${to_price+rtn_price}')
+        print(f'{IATA_origin} > {airport}\t${to_price}\n{airport} > {IATA_origin}\t${rtn_price}\nTotal Price: ${to_price+rtn_price}')
       except:
         pass
     
@@ -118,8 +131,6 @@ def main():
       pass
     
     search_date += one_day_delta
-    trip = driver.find_element_by_xpath("//span[@class='air-stations-heading--origin-destination']").text
-    print(f"---------{trip}---------------------")
 
 if __name__ == "__main__":
   main()
