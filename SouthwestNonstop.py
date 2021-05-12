@@ -122,7 +122,7 @@ def main():
         searchAndPrint()
     elif mode == 'interval':
       datesInput()
-      while search_date < return_date: # Up to return day
+      while search_date <= return_date: # Up to return day
         searchAndPrint()
   except IndexError:
     datesInput()
