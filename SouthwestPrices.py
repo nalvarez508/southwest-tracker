@@ -21,23 +21,17 @@ def exitHandler(signum, frame):
 
 signal.signal(signal.SIGINT, exitHandler)
 chrome_options = Options()
-chrome_options.add_argument("--headless")
+#chrome_options.add_argument("--headless")
 chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
 driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
 
 airports = []
-
-def getAirportCodes(data):
-  prog = re.compile(r'\bid\b')
-  for iata in data:
-    m = prog.search(iata)
-    try:
-      airports.append(m.string.replace('"id": "',"").replace('",',""))
-    except AttributeError:
-      pass
+weAreDone = False
 
 def main():
-  IATA_origin = input("Origin: ").upper()
+  #IATA_origin = input("Origin: ").upper()
+  #to_date = input("Departure date (YYYY-MM-DD): ")
+  #rtn_date = input("Return date (YYYY-MM-DD): ")
   #IATA_destination = input("Destination: ").upper()
   search_date = date.today()
   data = requests.get("https://www.southwest.com/swa-ui/bootstrap/air-flight-schedules/1/data.js").text.strip().split("\n")
@@ -46,34 +40,77 @@ def main():
   end_date = date(int(last_bookable_date[0]), int(last_bookable_date[1]), int(last_bookable_date[2]))
   one_day_delta = timedelta(days=1)
 
+  # Testing
+  IATA_origin = "RNO"
+  to_date = "2021-06-01"
+  rtn_date = "2021-06-09"
+
   print(f"Flight schedules can be seen up to {end_date}.\n")
 
-  getAirportCodes(data)
+  def getAirportCodes():
+    prog = re.compile(r'\bid\b')
+    for iata in data:
+      m = prog.search(iata)
+      try:
+        code = (m.string.replace('"id": "',"").replace('",',"").strip(" "))
+        if code != IATA_origin:
+          airports.append(code)
+      except AttributeError:
+        pass
+
+  getAirportCodes()
+
+  print(f"Searching for roundtrip flights from {IATA_origin} from {to_date} to {rtn_date}...")
 
   for airport in airports:
-    URL = f"https://www.southwest.com/air/low-fare-calendar/select-dates.html?adultPassengersCount=1&currencyCode=USD&departureDate={to_date}&destinationAirportCode={IATA_codes[iata]}&originationAirportCode={IATA_origin}&passengerType=ADULT&returnAirportCode=&returnDate={rtn_date}&tripType=roundtrip"
+    URL = f"https://www.southwest.com/air/low-fare-calendar/select-dates.html?adultPassengersCount=1&currencyCode=USD&departureDate={to_date}&destinationAirportCode={airport}&originationAirportCode={IATA_origin}&passengerType=ADULT&returnAirportCode=&returnDate={rtn_date}&tripType=roundtrip"
 
     try:
+      print(URL)
       driver.get(URL)
+      print(driver.current_url)
+      #time.sleep(10)
+      #print(driver.page_source)
       try:
         try:
-          WebDriverWait(driver,5).until(EC.presence_of_element_located((By.XPATH, "//div[@class='air-low-fare-calendar-matrix-secondary']")))
+          WebDriverWait(driver,5).until(EC.presence_of_element_located((By.XPATH, "//div[@id='airLowFareCalendar_0']")))
         except TimeoutException:
-          pass
+          print("Timed out!")
         
-        flights = driver.find_element_by_xpath("//div[@class='air-low-fare-calendar-matrix-secondary']")
-        flight_list = flights.find_elements_by_css_selector("div.calendar-matrix--cell-container")
+        #flights = driver.find_element_by_xpath("//div[@class='air-low-fare-calendar-matrix-secondary']")
+        to_flights = driver.find_element_by_xpath("//div[@id='airLowFareCalendar_0']").find_elements_by_css_selector("div.air-low-fare-calendar-matrix-secondary")
+        rtn_flights = driver.find_element_by_xpath("//div[@id='airLowFareCalendar_1']").find_elements_by_css_selector("div.air-low-fare-calendar-matrix-secondary_last")
+        #to_flights = to_flights.find_elements_by_css_selector("div.air-low-fare-calendar-matrix-secondary")
 
-        for flight in flight_list:
-          #duration = flight.find_element_by_xpath(".//span[@class='flight-stops--duration-time']").text
+        print(f"Found flights for {airport}")
+
+        #while weAreDone == False:
+        for flight in to_flights:
+          #print("Loop!")
           try:
-            search = flight.find_element_by_xpath(".//span[@class='flight-stops--item-description_nonstop']").text
-            flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
-            flight_num = flight_num.replace(" ", "")
-            flight_time = flight.find_elements_by_xpath(".//span[@class='time--value']")
-            print(f"{calendar.day_abbr[search_date.weekday()]}\t{search_date}\tFlight {flight_num}\t{flight_time[0].text}\t{flight_time[1].text}")
+            day = flight.find_element_by_xpath(".//div[@class='content-cell--day']").text
+            if day == to_date[-2:]:
+              to_price = flight.find_element_by_xpath(".//span[@class='content-cell--fare-usd']")
+            elif day == rtn_date[-2:]:
+              rtn_price = flight.find_element_by_xpath(".//span[@class='content-cell--fare-usd']")
+              weAreDone = True
+              #print("Done!")
+              break
           except:
             pass
+        
+        for flight in rtn_flights:
+          #print("Loop!")
+          try:
+            day = flight.find_element_by_xpath(".//div[@class='content-cell--day']").text
+            if day == rtn_date[-2:]:
+              rtn_price = flight.find_element_by_xpath(".//span[@class='content-cell--fare-usd']")
+              break
+          except:
+            pass
+
+
+          print(f'{IATA_origin} > {airport}\t${to_price}\n{airport} > {IATA_origin}\t${rtn_price}\nTotal Price: ${to_price+rtn_price}')
       except:
         pass
     
@@ -81,7 +118,8 @@ def main():
       pass
     
     search_date += one_day_delta
-    print(f"----------------------{search_date}----------------------")
+    trip = driver.find_element_by_xpath("//span[@class='air-stations-heading--origin-destination']").text
+    print(f"---------{trip}---------------------")
 
 if __name__ == "__main__":
   main()
