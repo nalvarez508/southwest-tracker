@@ -43,10 +43,11 @@ def main():
   one_day_delta = timedelta(days=1)
 
   print(f"Flight schedules can be seen up to {end_date}.\n")
+  print(f"----------------------{search_date}----------------------")
 
-  # Checks every day until it reaches end of booking results
-  while search_date < end_date:
-    URL = f"https://www.southwest.com/air/flight-schedules/results.html?departureDate={search_date}&destinationAirportCode={IATA_destination}&originationAirportCode={IATA_origin}&scheduleViewType=daily&timeOfDay=ALL_DAY"
+  # Checks for nonstop flights from origin to destination
+  def roundtrip(orig, dest):
+    URL = f"https://www.southwest.com/air/flight-schedules/results.html?departureDate={search_date}&destinationAirportCode={dest}&originationAirportCode={orig}&scheduleViewType=daily&timeOfDay=ALL_DAY"
 
     try:
       driver.get(URL)
@@ -67,7 +68,7 @@ def main():
             flight_num = flight.find_element_by_xpath(".//span[@aria-hidden='true']").text
             flight_num = flight_num.replace(" ", "")
             flight_time = flight.find_elements_by_xpath(".//span[@class='time--value']")
-            print(f"{calendar.day_abbr[search_date.weekday()]}\t{search_date}\tFlight {flight_num}\t{flight_time[0].text}\t{flight_time[1].text}")
+            print(f"{calendar.day_abbr[search_date.weekday()]}\t{search_date}\t{orig}-{dest}\t{flight_num}\t{flight_time[0].text}\t{flight_time[1].text}")
           except:
             pass
       except:
@@ -76,6 +77,11 @@ def main():
     # Ctrl-C
     except IOError:
       pass
+
+  # Checks every day until it reaches end of booking results
+  while search_date < end_date:
+    roundtrip(IATA_origin, IATA_destination)
+    roundtrip(IATA_destination, IATA_origin)
     
     search_date += one_day_delta
     print(f"----------------------{search_date}----------------------")
