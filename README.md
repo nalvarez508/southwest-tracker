@@ -89,6 +89,31 @@ Mon     2021-08-09      OAK-SEA #319    4:45PM  6:45PM
 Mon     2021-08-09      OAK-SEA #1665   7:05PM  9:10PM
 ```
 
+#### Direct Flights
+Another argument that can be passed in is one to search for direct flights (no plane change) as well as nonstop flights. This is taken after any arguments from above.
+
+Commands:
+`> python3 SouthwestNonstop.py direct`
+`> python3 SouthwestNonstop.py interval direct`
+`> python3 SouthwestNonstop.py all direct`
+
+Example output:
+`> python3 SouthwestNonstop.py all direct`
+```
+Origin: RNO
+Destination: LAX
+
+Flight schedules can be seen up to 2021-11-05.
+Departure date (YYYY-MM-DD): 2021-05-12
+Return date (YYYY-MM-DD): 2021-05-13
+
+----------------------2021-05-12----------------------
+Wed     2021-05-12      RNO-LAX #2529   3:25PM  4:55PM  Nonstop
+----------------------2021-05-13----------------------
+Thu     2021-05-13      LAX-RNO #3693   1:45PM  3:10PM  Nonstop
+Thu     2021-05-13      LAX-RNO #1847   6:15PM  9:05PM  Direct
+```
+
 #### Generalities
 If flights are not found, there will be no output other than a reassurance indicator that the program is still searching:
 ```
