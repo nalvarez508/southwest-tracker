@@ -11,14 +11,18 @@ assuming `pip` is in the PATH variable. On Windows, I use `py -3 -m pip install 
 You will also need a webdriver for Selenium. This program is set up to use the Chrome webdriver. This can be downloaded from [Selenium's Developer Website](https://www.selenium.dev/documentation/en/webdriver/driver_requirements/#quick-reference). Your PATH variable will need to be updated with wherever you saved the executable.
 
 ### Southwest Nonstop
-Loads daily flight schedules, checks if a nonstop flight(s) exist, and prints it out. Accepts an origin and destination in the form of IATA airport code. Roundtrip flights returned.
+There are three operational modes to this but the goal is to find nonstop flights.
+
+##### Search All
+Searches for nonstop flights, both to and from, between the current date and last available booking date.
 
 Example output:
+`> python3 SouthwestNonstop.py all`
 ```
 Origin: RNO
 Destination: PHX
-Flight schedules can be seen up to 2021-11-05.
 
+Flight schedules can be seen up to 2021-11-05.
 ----------------------2021-05-12----------------------
 Wed     2021-05-12      RNO-PHX #4505   6:05AM  7:50AM
 Wed     2021-05-12      RNO-PHX #3880   1:45PM  3:30PM
@@ -32,6 +36,60 @@ Thu     2021-05-13      PHX-RNO #278    8:35AM  10:20AM
 Thu     2021-05-13      PHX-RNO #1546   12:10PM 1:55PM
 Thu     2021-05-13      PHX-RNO #2054   9:00PM  10:45PM
 ```
+
+##### Search Interval
+Searches for nonstop flights, both to and from, between the specified departure and return dates.
+
+Example output:
+`> python3 SouthwestNonstop.py interval`
+```
+Origin: DEN
+Destination: CHS
+
+Flight schedules can be seen up to 2021-11-05.
+Departure date (YYYY-MM-DD): 2021-06-03
+Return date (YYYY-MM-DD): 2021-06-05
+
+----------------------2021-06-03----------------------
+Thu     2021-06-03      DEN-CHS #1171   11:20AM 4:40PM
+Thu     2021-06-03      CHS-DEN #2073   4:35PM  6:20PM
+----------------------2021-06-04----------------------
+Fri     2021-06-04      DEN-CHS #1171   11:20AM 4:40PM
+Fri     2021-06-04      CHS-DEN #2073   4:35PM  6:20PM
+----------------------2021-06-05----------------------
+Sat     2021-06-05      DEN-CHS #4281   11:35AM 4:55PM
+Sat     2021-06-05      DEN-CHS #5547   3:45PM  9:05PM
+Sat     2021-06-05      CHS-DEN #4321   5:40PM  7:25PM
+```
+
+##### Search Trip
+Searches for nonstop flights, to and then from, on the specified departure and return dates.
+
+Example output:
+`> python3 SouthwestNonstop.py`
+```
+Origin: SEA
+Destination: OAK
+
+Flight schedules can be seen up to 2021-11-05.
+Departure date (YYYY-MM-DD): 2021-07-05
+Return date (YYYY-MM-DD): 2021-08-09
+
+----------------------2021-07-05----------------------
+Mon     2021-07-05      SEA-OAK #1686   5:55AM  8:00AM
+Mon     2021-07-05      SEA-OAK #1158   11:25AM 1:35PM
+Mon     2021-07-05      SEA-OAK #1819   4:00PM  6:20PM
+Mon     2021-07-05      SEA-OAK #1763   7:25PM  9:30PM
+Mon     2021-07-05      SEA-OAK #354    10:00PM 12:10AM
+----------------------2021-08-09----------------------
+Mon     2021-08-09      OAK-SEA #376    6:20AM  8:30AM
+Mon     2021-08-09      OAK-SEA #1157   8:20AM  10:25AM
+Mon     2021-08-09      OAK-SEA #1817   1:10PM  3:15PM
+Mon     2021-08-09      OAK-SEA #319    4:45PM  6:45PM
+Mon     2021-08-09      OAK-SEA #1665   7:05PM  9:10PM
+```
+
+##### Generalities
 If flights are not found, there will be no output other than a reassurance indicator that the program is still searching:
 ```
 Origin: SMF
@@ -43,6 +101,8 @@ Flight schedules can be seen up to 2021-11-05.
 ----------------------2021-05-14----------------------
 ----------------------2021-05-15----------------------
 ```
+
+If the dates entered are either before the current date or after the last booking date, you will be prompted to enter them again.
 
 The program expects that the IATA codes entered are valid Southwest destinations. Unlike the Southwest Prices program, I did not implement the airport code scraper to perform validation. If an airport code is incorrect, you'll notice the dates will still appear but will take noticeably longer, as it is timing out looking for the accordion element.
 
