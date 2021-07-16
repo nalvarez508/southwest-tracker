@@ -2,6 +2,7 @@
 # Functional. They don't care about scraping flight schedules.
 
 from datetime import date, timedelta
+from progressbar import progressbar
 import subprocess
 import logging
 import calendar
@@ -151,19 +152,23 @@ def main():
       pass
     mode = sys.argv[1]
     if mode == 'all':
-      while search_date < end_date: # Up to last booking day
+      # Up to last booking day
+      days = end_date-search_date
+      for i in progressbar(range(days.days), redirect_stdout=True):
         searchAndPrint()
     elif mode == 'interval':
       datesInput()
-      while search_date <= return_date: # Up to return day
+      days = return_date-search_date
+      # Up to return day
+      for i in progressbar(range(days.days), redirect_stdout=True):
         searchAndPrint()
     elif mode == 'direct':
       datesInput()
-      for d in range(0,2): # Only two days
+      for d in progressbar(range(2), redirect_stdout=True): # Only two days
         searchAndPrint(d)
   except IndexError:
     datesInput()
-    for d in range(0,2): # Only two days
+    for d in progressbar(range(2), redirect_stdout=True): # Only two days
       searchAndPrint(d)
 
 if __name__ == "__main__":
