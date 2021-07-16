@@ -93,8 +93,11 @@ Mon     2021-08-09      OAK-SEA #1665   7:05PM  9:10PM
 Another argument that can be passed in is one to search for direct flights (no plane change) as well as nonstop flights. This is taken after any arguments from above.
 
 Commands:
+
 `> python3 SouthwestNonstop.py direct`
+
 `> python3 SouthwestNonstop.py interval direct`
+
 `> python3 SouthwestNonstop.py all direct`
 
 Example output:
