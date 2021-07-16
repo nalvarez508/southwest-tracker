@@ -4,9 +4,9 @@ This project was originally designed to determine if there were nonstop flights 
 
 #### Dependencies
 
-Selenium is required to use this application. You can get it with
-`pip install selenium`
-assuming `pip` is in the PATH variable. On Windows, I use `py -3 -m pip install selenium`.
+Selenium and progressbar are required to use this application. You can get them with
+`pip install selenium progressbar`
+assuming `pip` is in the PATH variable. On Windows, I use `py -3 -m pip install selenium progressbar`.
 
 You will also need a webdriver for Selenium. This program is set up to use the Chrome webdriver. This can be downloaded from [Selenium's Developer Website](https://www.selenium.dev/documentation/en/webdriver/driver_requirements/#quick-reference). Your PATH variable will need to be updated with wherever you saved the executable.
 
