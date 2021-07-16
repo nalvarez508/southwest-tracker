@@ -3,6 +3,7 @@
 
 from datetime import date, timedelta
 from progressbar import progressbar
+import queue
 import subprocess
 import logging
 import calendar
@@ -10,6 +11,8 @@ import time
 import signal
 import requests
 import sys
+import threading
+from requests.models import to_native_string
 
 from selenium.webdriver.remote.remote_connection import LOGGER as seleniumLogger
 seleniumLogger.setLevel(logging.WARNING)
@@ -29,11 +32,14 @@ signal.signal(signal.SIGINT, exitHandler)
 chrome_options = Options()
 chrome_options.add_argument("--headless")
 chrome_options.add_experimental_option("excludeSwitches", ["enable-logging"])
-driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
+to_driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
+rtn_driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
 
 # I hate global variables
 search_date = date.today()
 return_date = date.today()
+search_date_dt = date.today()
+return_date_dt = date.today()
 direct_enabled = False
 
 def main():
@@ -68,9 +74,10 @@ def main():
     print()
   
   # Checks for nonstop flights from origin to destination
-  def roundtrip(orig, dest):
+  def roundtrip(orig, dest, driver):
     URL = f"https://www.southwest.com/air/flight-schedules/results.html?departureDate={search_date}&destinationAirportCode={dest}&originationAirportCode={orig}&scheduleViewType=daily&timeOfDay=ALL_DAY"
     global direct_enabled
+    finalAnswer = ""
 
     try:
       driver.get(URL)
@@ -114,12 +121,13 @@ def main():
             response = f"{calendar.day_abbr[search_date.weekday()]}\t{search_date}\t{orig}-{dest}\t{flight_num}\t{flight_time[0].text}\t{flight_time[1].text}"
             if direct_enabled:
               response += f"\t{search}"
-            print(response)
+            finalAnswer += f'{response}\n'
           except:
             pass
       except:
         pass
-    
+
+      return finalAnswer
     # Ctrl-C
     except IOError:
       pass
@@ -128,10 +136,34 @@ def main():
   def searchAndPrint(count=2):
     global search_date, return_date
     print(f"----------------------{search_date}----------------------")
-    if (count == 2) or (count == 0):
-      roundtrip(IATA_origin, IATA_destination)
-    if (count == 2) or (count == 1):
-      roundtrip(IATA_destination, IATA_origin)
+
+    def goingToFlights(q):
+      if (count == 2) or (count == 0):
+        t = roundtrip(IATA_origin, IATA_destination, to_driver)
+        q.put(t)
+        event_t1.set()
+
+    def comingFromFlights(q):
+      if (count == 2) or (count == 1):
+        r = roundtrip(IATA_destination, IATA_origin, rtn_driver)
+        q.put(r)
+        event_t2.set()
+
+    q1 = queue.Queue()
+    q2 = queue.Queue()
+    t1 = threading.Thread(target=goingToFlights, args=[q1])
+    t2 = threading.Thread(target=comingFromFlights, args=[q2])
+    t1.daemon = True
+    t2.daemon = True
+    event_t1 = threading.Event()
+    event_t2 = threading.Event()
+    t1.start()
+    t2.start()
+    t1.join()
+    t2.join()
+    event_t1.wait()
+    event_t2.wait()
+    print(f'{q1.get()}{q2.get()}')
 
     # If we are not in 'all' or 'interval' mode, do not increment the day, go to the return date
     try:
@@ -152,14 +184,14 @@ def main():
       pass
     mode = sys.argv[1]
     if mode == 'all':
-      # Up to last booking day
+      #while search_date < end_date: # Up to last booking day
       days = end_date-search_date
       for i in progressbar(range(days.days), redirect_stdout=True):
         searchAndPrint()
     elif mode == 'interval':
       datesInput()
       days = return_date-search_date
-      # Up to return day
+      #while search_date <= return_date: # Up to return day
       for i in progressbar(range(days.days), redirect_stdout=True):
         searchAndPrint()
     elif mode == 'direct':
@@ -172,4 +204,7 @@ def main():
       searchAndPrint(d)
 
 if __name__ == "__main__":
-  main()
+  try:
+    main()
+  except ConnectionResetError:
+    exit()
