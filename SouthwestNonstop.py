@@ -164,11 +164,11 @@ def main():
         searchAndPrint()
     elif mode == 'direct':
       datesInput()
-      for d in progressbar(range(2), redirect_stdout=True): # Only two days
+      for d in progressbar(range(0,2), redirect_stdout=True): # Only two days
         searchAndPrint(d)
   except IndexError:
     datesInput()
-    for d in progressbar(range(2), redirect_stdout=True): # Only two days
+    for d in progressbar(range(0,2), redirect_stdout=True): # Only two days
       searchAndPrint(d)
 
 if __name__ == "__main__":
