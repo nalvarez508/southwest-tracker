@@ -2,6 +2,14 @@
 
 This project was originally designed to determine if there were nonstop flights between a location - specifically, Sacramento to Orlando. It's listed on the airport sites as having nonstop (seasonal) service, but I did not know when that season was.
 
+## Update
+
+Two major updates are underway.
+
+The addition of threading has cut search times by 53%, a major improvement.
+
+The flight schedules program now has a GUI, currently under development and testing. A few bugs in that one, for sure. Updated documentation is coming soon for that revision.
+
 #### Dependencies
 
 Selenium and progressbar are required to use this application. You can get them with
