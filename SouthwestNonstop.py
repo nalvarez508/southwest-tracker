@@ -38,8 +38,6 @@ rtn_driver = webdriver.Chrome(service_log_path='NULL', options=chrome_options)
 # I hate global variables
 search_date = date.today()
 return_date = date.today()
-search_date_dt = date.today()
-return_date_dt = date.today()
 direct_enabled = False
 
 def main():
