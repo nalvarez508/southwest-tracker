@@ -2,9 +2,11 @@
 
 This project was originally designed to determine if there were nonstop flights between a location - specifically, Sacramento to Orlando. It's listed on the airport sites as having nonstop (seasonal) service, but I did not know when that season was.
 
+**Update March 2022:** Southwest either blocked my IP or scraping overall. Rest in peace Southwest Tracker.
+
 ## Update
 
-Two major updates are underway.
+Two major updates are NOT underway.
 
 The addition of threading has cut search times by 53%, a major improvement.
 
